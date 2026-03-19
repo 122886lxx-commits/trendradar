@@ -49,6 +49,15 @@ def _get_env_str(key: str, default: str = "") -> str:
     return os.environ.get(key, "").strip() or default
 
 
+def _normalize_platforms_config(platforms_config: Any) -> list:
+    """兼容 platforms 的 list / dict.sources 两种写法"""
+    if isinstance(platforms_config, dict):
+        return platforms_config.get("sources", [])
+    if isinstance(platforms_config, list):
+        return platforms_config
+    return []
+
+
 def _load_app_config(config_data: Dict) -> Dict:
     """加载应用配置"""
     app_config = config_data.get("app", {})
@@ -258,6 +267,43 @@ def _load_storage_config(config_data: Dict) -> Dict:
     }
 
 
+def _load_source_registry(config_data: Dict, config_path: Path) -> Dict:
+    """加载来源注册表"""
+    registry_config = config_data.get("source_registry", {})
+    registry_rel_path = _get_env_str("SOURCE_REGISTRY_PATH") or registry_config.get("path", "source_registry.yaml")
+
+    registry_path = Path(registry_rel_path)
+    if not registry_path.is_absolute():
+        registry_path = config_path.parent / registry_path
+
+    if not registry_path.exists():
+        return {
+            "LOADED": False,
+            "PATH": str(registry_path),
+            "DEFAULTS": {},
+            "SOURCES": [],
+            "BY_ID": {},
+        }
+
+    with open(registry_path, "r", encoding="utf-8") as f:
+        registry_data = yaml.safe_load(f) or {}
+
+    sources = registry_data.get("sources", [])
+    by_id = {
+        source.get("id"): source
+        for source in sources
+        if isinstance(source, dict) and source.get("id")
+    }
+
+    return {
+        "LOADED": True,
+        "PATH": str(registry_path),
+        "DEFAULTS": registry_data.get("defaults", {}),
+        "SOURCES": sources,
+        "BY_ID": by_id,
+    }
+
+
 def _load_webhook_config(config_data: Dict) -> Dict:
     """加载 Webhook 配置"""
     notification = config_data.get("notification", {})
@@ -403,10 +449,12 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
     if config_path is None:
         config_path = os.environ.get("CONFIG_PATH", "config/config.yaml")
 
-    if not Path(config_path).exists():
+    config_file = Path(config_path)
+
+    if not config_file.exists():
         raise FileNotFoundError(f"配置文件 {config_path} 不存在")
 
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_file, "r", encoding="utf-8") as f:
         config_data = yaml.safe_load(f)
 
     print(f"配置文件加载成功: {config_path}")
@@ -433,10 +481,13 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
     config["WEIGHT_CONFIG"] = _load_weight_config(config_data)
 
     # 平台配置
-    config["PLATFORMS"] = config_data.get("platforms", [])
+    config["PLATFORMS"] = _normalize_platforms_config(config_data.get("platforms", []))
 
     # RSS 配置
     config["RSS"] = _load_rss_config(config_data)
+
+    # 来源注册表
+    config["SOURCE_REGISTRY"] = _load_source_registry(config_data, config_file.resolve())
 
     # AI 分析配置
     config["AI_ANALYSIS"] = _load_ai_analysis_config(config_data)

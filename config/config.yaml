@@ -24,28 +24,31 @@ app:
 # name: 显示名称（可自定义，修改后不影响运行）
 # ===============================================================
 platforms:
-  - id: "toutiao"
-    name: "今日头条"
-  - id: "baidu"
-    name: "百度热搜"
-  - id: "wallstreetcn-hot"
-    name: "华尔街见闻"
-  - id: "thepaper"
-    name: "澎湃新闻"
-  - id: "bilibili-hot-search"
-    name: "bilibili 热搜"
-  - id: "cls-hot"
-    name: "财联社热门"
-  - id: "ifeng"
-    name: "凤凰网"
-  - id: "tieba"
-    name: "贴吧"
-  - id: "weibo"
-    name: "微博"
-  - id: "douyin"
-    name: "抖音"
-  - id: "zhihu"
-    name: "知乎"
+  enabled: true
+  sources:
+    - id: "toutiao"
+      name: "今日头条"
+    - id: "baidu"
+      name: "百度热搜"
+    - id: "wallstreetcn-hot"
+      name: "华尔街见闻"
+    - id: "thepaper"
+      name: "澎湃新闻"
+    - id: "bilibili-hot-search"
+      name: "bilibili 热搜"
+    - id: "cls-hot"
+      name: "财联社热门"
+    - id: "ifeng"
+      name: "凤凰网"
+    - id: "tieba"
+      name: "贴吧"
+    - id: "weibo"
+      name: "微博"
+    - id: "douyin"
+      name: "抖音"
+    - id: "zhihu"
+      name: "知乎"
+
 
 
 # ===============================================================
@@ -83,17 +86,84 @@ rss:
     - id: "hacker-news"
       name: "Hacker News"
       url: "https://hnrss.org/frontpage"
+      enabled: false                  # 默认关闭：泛技术源，容易稀释日报的高价值信号
       # max_age_days: 1               # 示例：只推送1天内的文章
 
     - id: "ruanyifeng"
       name: "阮一峰的网络日志"
       url: "http://www.ruanyifeng.com/blog/atom.xml"
+      enabled: false                  # 默认关闭：更适合作为手动补充阅读
       # max_age_days: 7               # 示例：推送7天内的文章（更新较慢的博客）
     
     - id: "yahoo-finance"
       name: "雅虎财经"
       url: "https://finance.yahoo.com/news/rssindex"
       enabled: false                  # 禁用
+
+    - id: openai-news
+      name: "[C/OpenAI] Newsroom"
+      url: "https://openai.com/news/rss.xml"
+      enabled: true
+
+    - id: google-keyword
+      name: "[C/Google] The Keyword"
+      url: "https://blog.google/rss/"
+      enabled: true
+
+    - id: google-cloud-blog
+      name: "[D/Google Cloud] Blog"
+      url: "https://cloudblog.withgoogle.com/rss"
+      enabled: true
+
+    - id: deepmind-blog
+      name: "[C/Google DeepMind] Blog"
+      url: "https://deepmind.com/blog/feed/basic"
+      enabled: true
+
+    - id: meta-newsroom
+      name: "[C/Meta] Newsroom"
+      url: "https://about.fb.com/feed/"
+      enabled: true
+
+    - id: meta-research
+      name: "[D/Meta Research] Feed"
+      url: "https://research.facebook.com/feed/"
+      enabled: true
+
+    - id: meta-engineering
+      name: "[D/Meta Engineering] Blog"
+      url: "https://engineering.fb.com/feed/"
+      enabled: true
+
+    - id: simonwillison
+      name: "[E/Expert] Simon Willison"
+      url: "https://simonwillison.net/atom/everything/"
+      enabled: true
+
+    - id: minimaxir
+      name: "[E/Expert] Max Woolf"
+      url: "https://minimaxir.com/index.xml"
+      enabled: true
+
+    - id: gary-marcus
+      name: "[E/Expert] Gary Marcus"
+      url: "https://garymarcus.substack.com/feed"
+      enabled: true
+
+    - id: jiqizhixin
+      name: "[M/CN媒体] 机器之心"
+      url: "https://jiqizhixin.com/rss"
+      enabled: true
+
+    - id: qbitai
+      name: "[M/CN媒体] 量子位"
+      url: "https://www.qbitai.com/feed"
+      enabled: true
+
+    - id: synced-ai
+      name: "[M/Media] Synced AI"
+      url: "https://syncedreview.com/tag/ai/feed"
+      enabled: true
 
     # 自定义源示例
     # - id: "custom-feed"
@@ -104,7 +174,18 @@ rss:
 
 
 # ===============================================================
-# 4. 报告模式
+# 4. 来源注册表
+#
+# 用途：
+#   - 将“官方 / 开发者 / 专家 / 媒体”来源的元数据统一放到独立文件维护
+#   - 供 skill、日报规则、后续质量校验使用
+# ===============================================================
+source_registry:
+  path: "source_registry.yaml"
+
+
+# ===============================================================
+# 5. 报告模式
 #
 # 🔸 daily（当日汇总模式）
 #    • 推送时机：按时推送(默认每小时推送一次)
@@ -133,7 +214,7 @@ report:
 
 
 # ===============================================================
-# 5. 推送通知
+# 6. 推送通知
 #
 # ⚠️ 重要安全警告 ⚠️
 #
@@ -222,7 +303,7 @@ notification:
 
 
 # ===============================================================
-# 6. 存储配置
+# 7. 存储配置
 # ===============================================================
 storage:
   # 存储后端选择
@@ -265,7 +346,24 @@ storage:
 
 
 # ===============================================================
-# 7. AI 分析功能
+# 8. AI 模型（LiteLLM 统一配置）
+# - 使用 OpenAI 兼容接口的 Qwen，可保持 api_base 指向 DashScope 兼容端点
+# - 模型名需包含提供商前缀（provider/model），以通过校验并走正确的调用逻辑
+# ===============================================================
+ai:
+  model: "openai/qwen-max"            # 格式: provider/model；例：openai/qwen-max
+  api_key: ""                         # 建议用环境变量 AI_API_KEY 覆盖
+  api_base: "https://dashscope.aliyuncs.com/compatible-mode/v1"  # 兼容模式基础地址（自动拼 /chat/completions）
+  timeout: 90                         # 请求超时（秒）
+  temperature: 0.7                    # 采样温度
+  max_tokens: 2000                    # 最大生成 token，0 表示使用默认
+  num_retries: 2                      # 失败重试次数
+  fallback_models: []                 # 备用模型列表（可选）
+  extra_params: {}                    # 额外参数（LiteLLM 直通）
+
+
+# ===============================================================
+# 9. AI 分析功能
 #
 # 使用 AI 大模型对推送内容进行深度分析
 # 支持 OpenAI、Anthropic、DeepSeek等兼容接口
@@ -279,15 +377,15 @@ ai_analysis:
   #   - openai: OpenAI
   #   - gemini: Google Gemini
   #   - custom: 自定义 OpenAI 兼容接口（需填写完整 base_url）
-  provider: "deepseek"              # 提供商
+  provider: "openai"                # 提供商（Qwen 走 OpenAI 兼容模式）
   api_key: ""                       # API Key（建议使用环境变量 AI_API_KEY）
 
-  model: "deepseek-chat"            # 模型名称
+  model: "qwen-max-latest"          # 模型名称（示例：qwen-max-latest / qwen-plus / qwen-turbo）
                                     # DeepSeek: deepseek-chat, deepseek-reasoner
                                     # OpenAI: o3-mini, o1, gpt-4o
                                     # Gemini: gemini-2.5-flash, gemini-2.5-pro
 
-  base_url: ""                      # 完整 API 地址（可选）
+  base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"  # Qwen OpenAI 兼容完整端点
                                     # 留空则使用提供商默认端点
                                     # 其他提供商必须填写完整 URL
                                     # 示例: https://api.openai.com/v1/chat/completions
@@ -314,7 +412,7 @@ ai_analysis:
 
 
 # ===============================================================
-# 8. 高级设置（一般无需修改）
+# 10. 高级设置（一般无需修改）
 # ===============================================================
 advanced:
   # 调试模式
@@ -329,7 +427,7 @@ advanced:
     enabled: true                     # 是否启用爬取新闻功能
     request_interval: 2000            # 请求间隔（毫秒）
     use_proxy: false                  # 是否启用代理
-    default_proxy: "http://127.0.0.1:10801"
+    default_proxy: ""                 # 公开仓库建议留空，按本地环境自行覆盖
 
   # RSS 设置
   rss:

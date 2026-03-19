@@ -1,0 +1,174 @@
+defaults:
+  main_signal_tiers:
+    - C
+    - D
+  background_tiers:
+    - E
+  media_tiers:
+    - M
+  media_signal_cap: 2
+  product_signal_cap: 5
+  invest_signal_cap: 4
+  report_signal_cap: 8
+  paper_signal_cap: 3
+
+sources:
+  - id: openai-news
+    label: "[C/OpenAI] Newsroom"
+    tier: C
+    company: OpenAI
+    geo: us
+    allowed_reports: [report, product, invest]
+    domains: [openai.com]
+    priority: 100
+    daily_enabled: true
+
+  - id: google-keyword
+    label: "[C/Google] The Keyword"
+    tier: C
+    company: Google
+    geo: us
+    allowed_reports: [report, product, invest]
+    domains: [blog.google, googleblog.com]
+    priority: 96
+    daily_enabled: true
+
+  - id: deepmind-blog
+    label: "[C/Google DeepMind] Blog"
+    tier: C
+    company: Google DeepMind
+    geo: us
+    allowed_reports: [report, product, paper]
+    domains: [deepmind.com]
+    priority: 97
+    daily_enabled: true
+
+  - id: meta-newsroom
+    label: "[C/Meta] Newsroom"
+    tier: C
+    company: Meta
+    geo: us
+    allowed_reports: [report, product, invest]
+    domains: [about.fb.com, meta.com]
+    priority: 94
+    daily_enabled: true
+
+  - id: google-cloud-blog
+    label: "[D/Google Cloud] Blog"
+    tier: D
+    company: Google Cloud
+    geo: us
+    allowed_reports: [report, product, paper]
+    domains: [cloudblog.withgoogle.com]
+    priority: 92
+    daily_enabled: true
+
+  - id: meta-research
+    label: "[D/Meta Research] Feed"
+    tier: D
+    company: Meta
+    geo: us
+    allowed_reports: [report, paper]
+    domains: [research.facebook.com]
+    priority: 90
+    daily_enabled: true
+
+  - id: meta-engineering
+    label: "[D/Meta Engineering] Blog"
+    tier: D
+    company: Meta
+    geo: us
+    allowed_reports: [report, product, paper]
+    domains: [engineering.fb.com]
+    priority: 89
+    daily_enabled: true
+
+  - id: simonwillison
+    label: "[E/Expert] Simon Willison"
+    tier: E
+    company: Simon Willison
+    geo: uk
+    allowed_reports: [report, paper]
+    domains: [simonwillison.net]
+    priority: 72
+    daily_enabled: true
+
+  - id: minimaxir
+    label: "[E/Expert] Max Woolf"
+    tier: E
+    company: Max Woolf
+    geo: us
+    allowed_reports: [report, paper]
+    domains: [minimaxir.com]
+    priority: 68
+    daily_enabled: true
+
+  - id: gary-marcus
+    label: "[E/Expert] Gary Marcus"
+    tier: E
+    company: Gary Marcus
+    geo: us
+    allowed_reports: [report, invest]
+    domains: [garymarcus.substack.com]
+    priority: 64
+    daily_enabled: true
+
+  - id: jiqizhixin
+    label: "[M/CN媒体] 机器之心"
+    tier: M
+    company: 机器之心
+    geo: cn
+    allowed_reports: [report, product, invest, paper]
+    domains: [jiqizhixin.com]
+    priority: 40
+    daily_enabled: true
+
+  - id: qbitai
+    label: "[M/CN媒体] 量子位"
+    tier: M
+    company: 量子位
+    geo: cn
+    allowed_reports: [report, product, invest, paper]
+    domains: [qbitai.com, www.qbitai.com]
+    priority: 38
+    daily_enabled: true
+
+  - id: synced-ai
+    label: "[M/Media] Synced AI"
+    tier: M
+    company: Synced
+    geo: us
+    allowed_reports: [report, product, paper]
+    domains: [syncedreview.com]
+    priority: 36
+    daily_enabled: true
+
+  - id: hacker-news
+    label: "Hacker News"
+    tier: E
+    company: Y Combinator
+    geo: us
+    allowed_reports: [report]
+    domains: [hnrss.org, news.ycombinator.com]
+    priority: 20
+    daily_enabled: false
+
+  - id: ruanyifeng
+    label: "阮一峰的网络日志"
+    tier: E
+    company: 阮一峰
+    geo: cn
+    allowed_reports: [report]
+    domains: [ruanyifeng.com]
+    priority: 18
+    daily_enabled: false
+
+  - id: yahoo-finance
+    label: "雅虎财经"
+    tier: M
+    company: Yahoo Finance
+    geo: us
+    allowed_reports: [invest]
+    domains: [finance.yahoo.com]
+    priority: 18
+    daily_enabled: false

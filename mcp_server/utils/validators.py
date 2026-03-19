@@ -168,6 +168,8 @@ def get_supported_platforms() -> List[str]:
         with open(config_path, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
             platforms = config.get('platforms', [])
+            if isinstance(platforms, dict):
+                platforms = platforms.get('sources', [])
             return [p['id'] for p in platforms if 'id' in p]
     except Exception as e:
         # 降级方案：返回空列表，允许所有平台
@@ -515,7 +517,7 @@ def validate_config_section(section: Optional[str]) -> str:
     Raises:
         InvalidParameterError: 配置节无效
     """
-    valid_sections = ["all", "crawler", "push", "keywords", "weights"]
+    valid_sections = ["all", "crawler", "push", "keywords", "weights", "source_registry"]
     return validate_mode(section, valid_sections, "all")
 
 
@@ -610,4 +612,3 @@ def validate_date_query(
     DateParser.validate_date_not_too_old(parsed_date, max_days=max_days_ago)
 
     return parsed_date
-

@@ -7,7 +7,10 @@
 import re
 from collections import Counter
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
+import yaml
 
 from .cache_service import get_cache
 from .parser_service import ParserService
@@ -483,6 +486,16 @@ class DataService:
         # 根据section返回对应配置
         advanced = config_data.get("advanced", {})
         advanced_crawler = advanced.get("crawler", {})
+        platforms = config_data.get("platforms", [])
+        if isinstance(platforms, dict):
+            platforms = platforms.get("sources", [])
+
+        source_registry_path = config_data.get("source_registry", {}).get("path", "source_registry.yaml")
+        source_registry_file = Path(self.parser.project_root) / "config" / source_registry_path
+        source_registry = {}
+        if source_registry_file.exists():
+            with open(source_registry_file, "r", encoding="utf-8") as f:
+                source_registry = yaml.safe_load(f) or {}
 
         if section == "all" or section == "crawler":
             crawler_config = {
@@ -490,7 +503,7 @@ class DataService:
                 "use_proxy": advanced_crawler.get("use_proxy", False),
                 "request_interval": advanced_crawler.get("request_interval", 1),
                 "retry_times": 3,
-                "platforms": [p["id"] for p in config_data.get("platforms", [])]
+                "platforms": [p["id"] for p in platforms]
             }
 
         if section == "all" or section == "push":
@@ -526,13 +539,22 @@ class DataService:
                 "hotness_weight": weight.get("hotness", 0.1)
             }
 
+        if section == "all" or section == "source_registry":
+            source_registry_config = {
+                "path": str(source_registry_file),
+                "loaded": bool(source_registry),
+                "defaults": source_registry.get("defaults", {}),
+                "sources": source_registry.get("sources", [])
+            }
+
         # 组装结果
         if section == "all":
             result = {
                 "crawler": crawler_config,
                 "push": push_config,
                 "keywords": keywords_config,
-                "weights": weights_config
+                "weights": weights_config,
+                "source_registry": source_registry_config,
             }
         elif section == "crawler":
             result = crawler_config
@@ -542,6 +564,8 @@ class DataService:
             result = keywords_config
         elif section == "weights":
             result = weights_config
+        elif section == "source_registry":
+            result = source_registry_config
         else:
             result = {}
 
